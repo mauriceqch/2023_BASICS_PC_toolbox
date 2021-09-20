@@ -58,7 +58,7 @@ if __name__ == '__main__':
             #version 330
 
             uniform mat4 model;
-            //in vec3 in_cube;
+            in vec3 in_cube;
             in vec3 in_vert;
             in vec3 in_color;
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
             void main() {
                 v_color = in_color;
-                gl_Position = model * vec4(in_vert, 1.0);
+                gl_Position = model * vec4(in_vert + in_cube, 1.0);
             }
         ''',
         fragment_shader='''
@@ -98,31 +98,24 @@ if __name__ == '__main__':
 
     # xyz = xyz[:1000]
     # rgb = rgb[:1000]
-
-    print('Build cubes')
-    xyz = np.hstack([xyz + c_el for c_el in cube])
-    xyz = xyz.reshape((-1, 3))
-
-    rgb = np.repeat(rgb, int(xyz.shape[0] / rgb.shape[0]), axis=0)
-
-    print(xyz, rgb)
+    print(xyz.shape, rgb.shape, cube.shape)
 
     print('Render')
     xyz_vbo = ctx.buffer(xyz.tobytes())
     rgb_vbo = ctx.buffer(rgb.tobytes())
     cube_vbo = ctx.buffer(cube.tobytes())
     vao = ctx.vertex_array(prog, [
-        # (cube_vbo, '3f4 /i', 'in_cube'),
-        (xyz_vbo, '3f4 /v', 'in_vert'),
-        (rgb_vbo, '3f1 /v', 'in_color'),
+        (cube_vbo, '3f4', 'in_cube'),
+        (xyz_vbo, '3f4 /i', 'in_vert'),
+        (rgb_vbo, '3f1 /i', 'in_color'),
     ])
 
-    resolution = 4096
+    resolution = 2048
     fbo = ctx.simple_framebuffer((resolution, resolution))
     fbo.use()
     fbo.clear(0.0, 0.0, 0.0, 1.0)
     prog['model'].write(mvp)
-    vao.render(moderngl.TRIANGLES)
+    vao.render(moderngl.TRIANGLES, instances=xyz.shape[0])
 
     print('Done')
     Image.frombytes('RGB', fbo.size, fbo.read(), 'raw', 'RGB', 0, -1).show()
