@@ -5,35 +5,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-# Euler–Rodrigues formula
-def rotation_matrix(axis, theta):
-    axis = np.asarray(axis)
-    axis = axis / math.sqrt(np.dot(axis, axis))
-    a = math.cos(theta / 2.0)
-    b, c, d = -axis * math.sin(theta / 2.0)
-    aa, bb, cc, dd = a * a, b * b, c * c, d * d
-    bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
-    return np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac), 0],
-                     [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab), 0],
-                     [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc, 0],
-                     [0, 0, 0, 1]])
-
-
-def euler_rotmat(angles):
-    roll, pitch, yaw = angles
-    sR = np.sin(roll)
-    cR = np.cos(roll)
-    sP = np.sin(pitch)
-    cP = np.cos(pitch)
-    sY = np.sin(yaw)
-    cY = np.cos(yaw)
-
-    return np.array([[cY * cP, -cY * sP * cR + sY * sR, cY * sP * sR + sY * cR, 0],
-                     [sP, cP * cR, -cP * sR, 0],
-                     [-sY * cP, sY * sP * cR + cY * sR, -sY * sP * sR + cY * cR, 0],
-                     [0, 0, 0, 1]], dtype=np.float32)
-
-
 def normalize(x):
     return x / np.linalg.norm(x)
 
@@ -104,3 +75,93 @@ def print_help():
     c: switch color scheme (elevation, D1 distance, D1 log distance)
     """)
 
+
+def pc_prog(ctx):
+    return ctx.program(
+        vertex_shader='''
+            #version 330
+
+            uniform mat4 model;
+            in vec3 in_cube;
+            in vec3 in_vert;
+            in vec3 in_color;
+
+            out vec3 v_color;
+
+            void main() {
+                v_color = in_color;
+                gl_Position = model * vec4(in_vert + in_cube, 1.0);
+            }
+        ''',
+        fragment_shader='''
+            #version 330
+
+            in vec3 v_color;
+
+            out vec3 f_color;
+
+            void main() {
+                f_color = v_color;
+            }
+        ''',
+    )
+
+
+def get_cube(cube_size):
+    cube = np.array([
+        -1.0, -1.0, -1.0,
+        -1.0, -1.0, 1.0,
+        -1.0, 1.0, 1.0,
+        1.0, 1.0, -1.0,
+        -1.0, -1.0, -1.0,
+        -1.0, 1.0, -1.0,
+        1.0, -1.0, 1.0,
+        -1.0, -1.0, -1.0,
+        1.0, -1.0, -1.0,
+        1.0, 1.0, -1.0,
+        1.0, -1.0, -1.0,
+        -1.0, -1.0, -1.0,
+        -1.0, -1.0, -1.0,
+        -1.0, 1.0, 1.0,
+        -1.0, 1.0, -1.0,
+        1.0, -1.0, 1.0,
+        -1.0, -1.0, 1.0,
+        -1.0, -1.0, -1.0,
+        -1.0, 1.0, 1.0,
+        -1.0, -1.0, 1.0,
+        1.0, -1.0, 1.0,
+        1.0, 1.0, 1.0,
+        1.0, -1.0, -1.0,
+        1.0, 1.0, -1.0,
+        1.0, -1.0, -1.0,
+        1.0, 1.0, 1.0,
+        1.0, -1.0, 1.0,
+        1.0, 1.0, 1.0,
+        1.0, 1.0, -1.0,
+        -1.0, 1.0, -1.0,
+        1.0, 1.0, 1.0,
+        -1.0, 1.0, -1.0,
+        -1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0,
+        -1.0, 1.0, 1.0,
+        1.0, -1.0, 1.0
+    ], dtype=np.float32).reshape((-1, 3))
+    cube = (cube + 1) / 2
+    cube = cube * cube_size
+    return cube
+
+
+def get_n_bits(xyz):
+    xyz2 = xyz - np.min(xyz, axis=0)
+    max_val = max(np.max(xyz2), np.max(xyz))
+    return int(np.ceil(np.log2(max_val)))
+
+
+class CircularTrajectory:
+    def __init__(self, dist):
+        self.dist = dist
+
+    def __call__(self, percent):
+        xVal = self.dist * np.sin(2 * np.pi * percent)
+        yVal = self.dist * np.cos(2 * np.pi * percent)
+        return [xVal, yVal, 0]
