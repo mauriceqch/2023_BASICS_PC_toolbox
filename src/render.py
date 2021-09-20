@@ -1,7 +1,7 @@
 import moderngl
 from plyfile import PlyData
 from numpy.lib.recfunctions import structured_to_unstructured
-from pyrr.matrix44 import create_look_at, create_perspective_projection
+from pyrr.matrix44 import create_look_at, create_perspective_projection, create_from_translation, create_from_scale
 import numpy as np
 
 from PIL import Image
@@ -58,6 +58,7 @@ if __name__ == '__main__':
             #version 330
 
             uniform mat4 model;
+            //in vec3 in_cube;
             in vec3 in_vert;
             in vec3 in_color;
 
@@ -84,11 +85,13 @@ if __name__ == '__main__':
     print('Read file')
     pc = PlyData.read('047.ply')
     # pc = PlyData.read('091.ply')
-    view = create_look_at([3, 0, 0], [0, 0, 0], [0, 0, 1], dtype=np.float32)
-    proj = create_perspective_projection(60, 1.0, 0.1, 10.0, dtype=np.float32)
-    mvp = view @ proj
 
     res = 1024
+    scale = create_from_scale([1 / (res / 2)] * 3, dtype=np.float32)
+    translate = create_from_translation([-1.0] * 3, dtype=np.float32)
+    view = create_look_at([3, 0, 0], [0, 0, 0], [0, 0, 1], dtype=np.float32)
+    proj = create_perspective_projection(60, 1.0, 0.01, 100.0, dtype=np.float32)
+    mvp = scale @ translate @ view @ proj
 
     xyz = structured_to_unstructured(pc['vertex'].data[['x', 'y', 'z']], dtype=np.float32)
     rgb = structured_to_unstructured(pc['vertex'].data[['red', 'green', 'blue']], dtype=np.uint8)
@@ -97,13 +100,8 @@ if __name__ == '__main__':
     # rgb = rgb[:1000]
 
     print('Build cubes')
-    # xyz = np.hstack([xyz,
-    #                  xyz + np.array([1, 0, 0], dtype=np.float32),
-    #                  xyz + np.array([0, 1, 0], dtype=np.float32),
-    #                  ])
     xyz = np.hstack([xyz + c_el for c_el in cube])
     xyz = xyz.reshape((-1, 3))
-    xyz = xyz / (res / 2) - 1.0
 
     rgb = np.repeat(rgb, int(xyz.shape[0] / rgb.shape[0]), axis=0)
 
@@ -112,7 +110,12 @@ if __name__ == '__main__':
     print('Render')
     xyz_vbo = ctx.buffer(xyz.tobytes())
     rgb_vbo = ctx.buffer(rgb.tobytes())
-    vao = ctx.vertex_array(prog, [(xyz_vbo, '3f4', 'in_vert'), (rgb_vbo, '3f1', 'in_color')])
+    cube_vbo = ctx.buffer(cube.tobytes())
+    vao = ctx.vertex_array(prog, [
+        # (cube_vbo, '3f4 /i', 'in_cube'),
+        (xyz_vbo, '3f4 /v', 'in_vert'),
+        (rgb_vbo, '3f1 /v', 'in_color'),
+    ])
 
     resolution = 4096
     fbo = ctx.simple_framebuffer((resolution, resolution))
