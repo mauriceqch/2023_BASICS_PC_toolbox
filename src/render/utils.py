@@ -142,7 +142,7 @@ class Camera:
         self.fovy = 45.0
         self.aspect_ratio = aspect_ratio
         self.z_near = 0.1
-        self.z_far = 4.0
+        self.z_far = 10.0
 
     def build_mvp(self):
         # Normalize voxelized point cloud to [-1, 1]^3 range
