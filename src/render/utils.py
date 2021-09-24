@@ -154,10 +154,11 @@ class Camera:
         proj = create_perspective_projection(self.fovy, self.aspect_ratio, self.z_near, self.z_far, dtype=np.float32)
         return translate @ scale @ rotate @ view @ proj
 
-    def set_eye(self, new_eye):
+    def set_eye(self, new_eye, ref_up=None):
         self.eye = np.asarray(new_eye, dtype=np.float32)
         front = normalize(self.center - self.eye)
-        right = normalize(np.cross(front, self.up))
+        up = self.up if ref_up is None else ref_up
+        right = normalize(np.cross(front, up))
         self.up = normalize(np.cross(right, front))
 
 
