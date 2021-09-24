@@ -39,3 +39,12 @@ Split in two steps:
                 --pcerror_cfg_path ~/code/MPEG/mpeg-pcc-tmc13-v14.0/cfg/octree-predlift/lossy-geom-lossy-attrs/longdress_vox10_1300/r06/pcerror.cfg \
                 --input_pc $pc \
                 --input_norm $pc; done; done
+
+# Render image
+
+    python render_img.py 001.ply 001.png
+
+# Render video
+
+    python render_vid.py 001.ply 001.avi
+
