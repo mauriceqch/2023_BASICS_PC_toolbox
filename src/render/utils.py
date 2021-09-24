@@ -142,7 +142,7 @@ class Camera:
         self.fovy = 45.0
         self.aspect_ratio = aspect_ratio
         self.z_near = 0.1
-        self.z_far = 10.0
+        self.z_far = 4.0
 
     def build_mvp(self):
         # Normalize voxelized point cloud to [-1, 1]^3 range
@@ -170,23 +170,25 @@ def read_pc(pc_path):
 
 def add_noise(xyz, intensity):
     rng = np.random.default_rng(42)
-    xyz = xyz + rng.random(xyz.shape, dtype=np.float32) * intensity
+    xyz = xyz + (rng.random(xyz.shape, dtype=np.float32) - 0.5) * intensity
     return xyz
 
 
 class Renderer:
     def __init__(self, ctx, xyz, rgb, resolution=(1920, 1080), fps=24, duration=5, trajectory=CircularTrajectory(3),
-                 cube_size=1):
+                 cube_size=1, noise=0.01):
         self.fps = fps
         self.duration = duration
         self.frames = fps * duration
         self.resolution = resolution
         self.trajectory = trajectory
         self.camera = Camera(xyz, resolution[0] / resolution[1])
-        cube = get_cube(cube_size)
+        cube = get_cube(cube_size) * (1 + noise) - noise / 2
         cube_vbo = ctx.buffer(cube.tobytes())
         self.prog = pc_prog(ctx)
         self.instances = xyz.shape[0]
+
+        xyz = add_noise(xyz, noise)  # Fix z-fighting
         xyz_vbo = ctx.buffer(xyz.tobytes())
         rgb_vbo = ctx.buffer(rgb.tobytes())
         self.vao = ctx.vertex_array(self.prog, [
