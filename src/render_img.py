@@ -4,7 +4,8 @@ import sys
 import moderngl
 
 from render.trajectories import FixedPointTrajectory
-from render.utils import read_pc, Renderer
+from render.utils import read_pc
+from render.renderers import Renderer
 
 
 def render_pc(pc_path, output_path, show, eye, cube_size):

@@ -6,7 +6,8 @@ import sys
 
 from tqdm import trange
 
-from render.utils import img_to_vid, read_pc, Renderer
+from render.utils import img_to_vid, read_pc
+from render.renderers import Renderer
 from render.trajectories import HelixTrajectory
 
 
