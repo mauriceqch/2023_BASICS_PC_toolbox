@@ -37,3 +37,27 @@ Split in two steps:
 # Render video
 
     python render_vid.py 001.ply 001.avi
+
+
+# Adaptive rendering
+
+    positionQuantizationScale: 0.125
+    positionQuantizationScale: 0.25
+    positionQuantizationScale: 0.5
+    positionQuantizationScale: 0.75
+    positionQuantizationScale: 0.875
+    positionQuantizationScale: 0.9375
+
+    python render_img.py 001_GPCC_r01.ply 001_GPCC_r01_c1.png --cube_size 1
+    python render_img.py 001_GPCC_r02.ply 001_GPCC_r02_c1.png --cube_size 1
+    python render_img.py 001_GPCC_r03.ply 001_GPCC_r03_c1.png --cube_size 1
+    python render_img.py 001_GPCC_r04.ply 001_GPCC_r04_c1.png --cube_size 1
+    python render_img.py 001_GPCC_r05.ply 001_GPCC_r05_c1.png --cube_size 1
+    python render_img.py 001_GPCC_r06.ply 001_GPCC_r06_c1.png --cube_size 1
+
+    python render_img.py 001_GPCC_r01.ply 001_GPCC_r01_ca.png --cube_size 8
+    python render_img.py 001_GPCC_r02.ply 001_GPCC_r02_ca.png --cube_size 4
+    python render_img.py 001_GPCC_r03.ply 001_GPCC_r03_ca.png --cube_size 2
+    python render_img.py 001_GPCC_r04.ply 001_GPCC_r04_ca.png --cube_size 1
+    python render_img.py 001_GPCC_r05.ply 001_GPCC_r05_ca.png --cube_size 1
+    python render_img.py 001_GPCC_r06.ply 001_GPCC_r06_ca.png --cube_size 1

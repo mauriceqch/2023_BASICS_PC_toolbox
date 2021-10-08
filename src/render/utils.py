@@ -184,7 +184,7 @@ class Renderer:
         self.resolution = resolution
         self.trajectory = trajectory
         self.camera = Camera(xyz, resolution[0] / resolution[1])
-        cube = get_cube(cube_size) * (1 + noise) - noise / 2
+        cube = get_cube(cube_size) * (1 + noise) - cube_size * noise / 2
         cube_vbo = ctx.buffer(cube.tobytes())
         self.prog = pc_prog(ctx)
         self.instances = xyz.shape[0]
