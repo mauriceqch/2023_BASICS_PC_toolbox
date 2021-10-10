@@ -80,7 +80,7 @@ class InteractiveWindow(mglw.WindowConfig):
         self.data = []
         for input_path in input_paths:
             xyz, attrs = read_pc(input_path)
-            self.data.append({'path': input_path, 'xyz': xyz, 'attrs': attrs})
+            self.data.append({'path': input_path, 'xyz': xyz, 'attrs': attrs, 'cube_size': 1})
 
         self.build_colors()
 
@@ -92,7 +92,7 @@ class InteractiveWindow(mglw.WindowConfig):
         self.text_renderer_vp = TextRenderer(self.ctx, self.wnd.width // len(self.data), self.wnd.height)
         self.text_renderer = TextRenderer(self.ctx, self.wnd.width, self.wnd.height)
         self.display_help = False
-        self.cube_size = 1
+        self.selected_pc = 0
 
     def build_colors(self):
         zmin, zmax = np.mean([np.quantile(pc['xyz'][:, 2], [0.01, 0.99]) for pc in self.data], axis=0)
@@ -124,13 +124,16 @@ class InteractiveWindow(mglw.WindowConfig):
         w = self.wnd.width // n_viewports
         for vp in range(n_viewports):
             self.ctx.viewport = (w * vp, 0, w, self.wnd.height)
-            self.data[vp]['renderer'](self.camera)
-            render_multiline_text(self.text_renderer_vp, [self.data[vp]['path']],
-                                  20, 20, 1)
+            cur_data = self.data[vp]
+            cur_data['renderer'](self.camera)
+            text = [self.data[vp]['path'], f'Cube size: {cur_data["cube_size"]}']
+            if self.selected_pc == vp:
+                text.insert(0, 'Selected')
+            render_multiline_text(self.text_renderer_vp, text, 20, 20, 1)
 
         self.ctx.viewport = (0, 0, self.wnd.width, self.wnd.height)
-        render_multiline_text(self.text_renderer, [f'Cube size: {self.cube_size}', f'Color: {self.sel_color}',
-                                                   'Press h for help'], 20, self.wnd.height - 30, -1)
+        render_multiline_text(self.text_renderer, [f'Color: {self.sel_color}', 'Press h for help'],
+                              20, self.wnd.height - 30, -1)
         if self.display_help:
             render_multiline_text(self.text_renderer, ['ZQSD/WASD: move', 'ER: roll', 'Mouse drag: rotate',
                                                        'Space/LSHIFT: rise/fall', 'V/B: Change cube size'],
@@ -149,17 +152,19 @@ class InteractiveWindow(mglw.WindowConfig):
                 self.display_help = not self.display_help
             n_viewports = len(self.data)
             if key == self.wnd.keys.B:
-                self.cube_size += 1
-                for vp in range(n_viewports):
-                    self.data[vp]['renderer'].set_cube_size(self.cube_size)
+                cur_data = self.data[self.selected_pc]
+                cur_data['cube_size'] += 1
+                cur_data['renderer'].set_cube_size(cur_data['cube_size'])
             if key == self.wnd.keys.V:
-                self.cube_size = max(1, self.cube_size - 1)
-                for vp in range(n_viewports):
-                    self.data[vp]['renderer'].set_cube_size(self.cube_size)
+                cur_data = self.data[self.selected_pc]
+                cur_data['cube_size'] = max(1, cur_data['cube_size'] - 1)
+                cur_data['renderer'].set_cube_size(cur_data['cube_size'])
             if key == self.wnd.keys.C:
                 self.sel_color = next(self.avail_colors)
                 for vp in range(n_viewports):
                     self.data[vp]['renderer'].set_rgb(self.data[vp]['colors'][self.sel_color])
+            if key == self.wnd.keys.N:
+                self.selected_pc = (self.selected_pc + 1) % len(self.data)
 
     def mouse_drag_event(self, x, y, dx, dy):
         self.camera_controller.mouse_drag_event(self.camera, x, y, dx, dy)
