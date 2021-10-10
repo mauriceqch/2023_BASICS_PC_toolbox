@@ -46,21 +46,33 @@ class Renderer:
         return self.frames
 
 
+def get_cube_with_noise(cube_size, noise):
+    return get_cube(cube_size) * (1 + noise) - cube_size * noise / 2
+
+
 class InteractiveRenderer:
     def __init__(self, ctx, xyz, rgb, cube_size=1, noise=0.01):
-        cube = get_cube(cube_size) * (1 + noise) - cube_size * noise / 2
-        cube_vbo = ctx.buffer(cube.tobytes())
+        self.noise = noise
+        cube = get_cube_with_noise(cube_size, noise)
+        self.cube_vbo = ctx.buffer(cube.tobytes())
         self.prog = pc_prog(ctx)
         self.instances = xyz.shape[0]
 
         xyz = add_noise(xyz, noise)  # Fix z-fighting
         xyz_vbo = ctx.buffer(xyz.tobytes())
-        rgb_vbo = ctx.buffer(rgb.tobytes())
+        self.rgb_vbo = ctx.buffer(rgb.tobytes())
         self.vao = ctx.vertex_array(self.prog, [
-            (cube_vbo, '3f4', 'in_cube'),
+            (self.cube_vbo, '3f4', 'in_cube'),
             (xyz_vbo, '3f4 /i', 'in_vert'),
-            (rgb_vbo, '3f1 /i', 'in_color'),
+            (self.rgb_vbo, '3f1 /i', 'in_color'),
         ])
+
+    def set_cube_size(self, size):
+        cube = get_cube_with_noise(size, self.noise)
+        self.cube_vbo.write(cube)
+
+    def set_rgb(self, rgb):
+        self.rgb_vbo.write(rgb.tobytes())
 
     def __call__(self, camera):
         mvp = camera.build_mvp()

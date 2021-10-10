@@ -123,8 +123,14 @@ def img_to_vid(images, fps, vid_output_path):
 def read_pc(pc_path):
     pc = PlyData.read(pc_path)
     xyz = structured_to_unstructured(pc['vertex'].data[['x', 'y', 'z']], dtype=np.float32)
-    rgb = structured_to_unstructured(pc['vertex'].data[['red', 'green', 'blue']], dtype=np.uint8)
-    return xyz, rgb
+    avail_attrs = [x.name for x in pc['vertex'].properties]
+
+    attrs = {}
+    rgb_attr = ['red', 'green', 'blue']
+    if all(x in avail_attrs for x in rgb_attr):
+        attrs['rgb'] = structured_to_unstructured(pc['vertex'].data[rgb_attr], dtype=np.uint8)
+
+    return xyz, attrs
 
 
 def add_noise(xyz, intensity):

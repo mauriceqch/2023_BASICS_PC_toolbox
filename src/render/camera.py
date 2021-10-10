@@ -67,7 +67,6 @@ class FreeViewpointCamera(BaseCamera):
         self.roll = 0
         self.pitch = 0
         self.yaw = 0
-        # self.update_rotation()
 
     def update_rotation(self, dyaw, dpitch, droll):
         # yaw
