@@ -70,3 +70,17 @@ Split in two steps:
     python render_img.py 001_GPCC_r04.ply 001_GPCC_r04_ca.png --cube_size 1
     python render_img.py 001_GPCC_r05.ply 001_GPCC_r05_ca.png --cube_size 1
     python render_img.py 001_GPCC_r06.ply 001_GPCC_r06_ca.png --cube_size 1
+
+# Interactive rendering
+
+Single point cloud:
+
+    python display_pc.py 001_GPCC_r06.ply
+
+Two point clouds (enables D1 error color scheme):
+
+    python display_pc.py 001_GPCC_r06.ply 001_GPCC_r01.ply
+
+Multiple point clouds:
+
+    python display_pc.py 001_GPCC_r06.ply 001_GPCC_r03.ply 001_GPCC_r02.ply 001_GPCC_r01.ply
