@@ -2,6 +2,8 @@
 
 This toolbox was used to create the BASICS point cloud compression quality assessment dataset.
 
+Link: https://arxiv.org/abs/2302.04796
+
 Reference:
 
 ```
