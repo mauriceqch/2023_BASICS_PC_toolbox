@@ -1,3 +1,20 @@
+# Toolbox for BASICS: Broad quality Assessment of Static point clouds In Compression Scenarios
+
+This toolbox was used to create the BASICS point cloud compression quality assessment dataset.
+
+Reference:
+
+```
+@misc{ak2023basics,
+      title={BASICS: Broad quality Assessment of Static point clouds In Compression Scenarios}, 
+      author={Ali Ak and Emin Zerman and Maurice Quach and Aladine Chetouani and Aljosa Smolic and Giuseppe Valenzise and Patrick Le Callet},
+      year={2023},
+      eprint={2302.04796},
+      archivePrefix={arXiv},
+      primaryClass={cs.MM}
+}
+```
+
 # Mesh to PC to Voxelized PC conversion
 
 Example usage:
